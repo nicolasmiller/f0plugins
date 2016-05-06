@@ -1,0 +1,64 @@
+class:: RedInfoLmu
+summary:: read data from ambient light sensors
+categories:: UGens>User Interaction
+related:: Classes/RedInfoBat, Classes/RedInfoSms
+
+DESCRIPTION::
+Only works on newer portable Mac models running OS X (10.4 or newer).
+
+CLASSMETHODS::
+
+METHOD:: kr
+returns 2 channels. left and right sensor data.
+zeros if no sensors installed.
+
+argument::trig
+trig asks for a new reading.
+
+NOTE::
+there is only one reading function internally. a trigger will cause global reading for all ugens. it makes little sense to have this ugen running in multiple synths. use busses.
+::
+
+EXAMPLES::
+
+code::
+s.boot;
+{RedInfoLmu.kr(Impulse.kr(10)).poll}.play;	//update 10 times per second
+
+//note: min and max may be different on different laptop models
+(
+{
+	var min= 21180, max= 995190;	//make sure these correspond roughly to what is posted
+	SinOsc.ar(RedInfoLmu.kr(Impulse.kr(10)).poll.linexp(min, max, 400, 4000), 0, 0.5);
+}.play;
+)
+
+
+//--gui test (with automatic calibration)
+(
+s.waitForBoot{
+	var syn, osc;
+	var w= Window("RedInfoLmu test", Rect(100, 200, 300, 120));
+	var c= [0, 2000, 'lin', 0, 0].asSpec;
+	var l= EZSlider(w, Rect(0, 10, 280, 20), "left", c);
+	var r= EZSlider(w, Rect(0, 40, 280, 20), "right", c);
+	w.view.background= Color.red(0.75);
+	w.front;
+	
+	syn= SynthDef(\ambientlightsensor, {|rate= 5|		//update rate
+		var trig= Impulse.kr(rate);
+		SendReply.kr(trig, 'lr', RedInfoLmu.kr(trig));
+	}).play(s);
+	osc= OSCresponder(s.addr, 'lr', {|t, resp, m|
+		{
+			if(m[3]>c.maxval, {c.maxval= m[3]});
+			if(m[4]>c.maxval, {c.maxval= m[4]});
+			l.value= m[3];
+			r.value= m[4];
+		}.defer;
+	}).add;
+	CmdPeriod.doOnce({if(w.isClosed.not, {w.close})});
+	w.onClose= {osc.remove; syn.free};
+}
+)
+::

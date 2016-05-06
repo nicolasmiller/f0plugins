@@ -1,0 +1,55 @@
+class:: RedInfoSms3
+summary:: read raw data from sudden motion sensor
+categories:: UGens>User Interaction
+related:: Classes/RedInfoSms, Classes/RedInfoSms2, Classes/RedInfoBat, Classes/RedInfoLmu
+
+DESCRIPTION::
+Only works on newer portable Mac models running OS X (10.4 or newer).
+Using UniMotion 0.4.1 (http://unimotion.sourceforge.net/) by Lincoln Ramsay
+
+Version 3 notes:
+This version reads the raw data.
+
+CLASSMETHODS::
+
+METHOD:: kr
+returns 3 channels. x, y and z sensor data (integers).
+zeros if no sensors installed.
+
+argument::trig
+asks for a new reading. the faster you ask, the more cpu it will require.
+
+NOTE::
+there is only one reading function internally. a trigger will cause global reading for all ugens. it makes little sense to have this ugen running in multiple synths. use busses.
+::
+
+EXAMPLES::
+
+code::
+//--gui test
+s.boot;
+(
+var syn, osc;
+var w= Window("RedInfoSms3 raw data", Rect(100, 200, 300, 120));
+var c= [-999, 999, 'lin', 0, 0].asSpec;
+var x= EZSlider(w, Rect(0, 10, 280, 20), "x", c);
+var y= EZSlider(w, Rect(0, 40, 280, 20), "y", c);
+var z= EZSlider(w, Rect(0, 70, 280, 20), "z", c);
+w.view.background= Color.red(0.75);
+w.front;
+
+syn= SynthDef(\suddenmotionsensor, {|rate= 15|		//update rate
+	var trig= Impulse.kr(rate);
+	SendReply.kr(trig, 'xyz', RedInfoSms3.kr(trig));
+}).play(s);
+osc= OSCresponder(s.addr, 'xyz', {|t, resp, m|
+	{
+		x.value= m[3];
+		y.value= m[4];
+		z.value= m[5];
+	}.defer;
+}).add;
+CmdPeriod.doOnce({if(w.isClosed.not, {w.close})});
+w.onClose= {osc.remove; syn.free};
+)
+::

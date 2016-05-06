@@ -1,0 +1,31 @@
+class:: RedAccelerometerX
+summary:: for iphone sc compatibility
+categories:: UGens>User Interaction
+related:: Classes/RedAccelerometerY, Classes/RedAccelerometerZ, Classes/RedInfoSms
+
+DESCRIPTION::
+There are 3 classes RedAccelerometerX, RedAccelerometerY, RedAccelerometerZ. One for each axis.
+
+NOTE::
+req. link::Classes/RedInfoSms:: ugen from the RedInfo ugen package (mac osx only).
+::
+
+CLASSMETHODS::
+
+METHOD:: kr
+
+EXAMPLES::
+
+code::
+s.boot;
+
+(
+{
+var x= RedAccelerometerX.kr(1, 499, 1).clip(1, 499);
+var y= RedAccelerometerY.kr(500, 999, 1).clip(500, 999);
+var z= RedAccelerometerZ.kr(0, 20, 0).clip(0, 20);
+Splay.ar({Gendy1.ar(minfreq:x, maxfreq:y, durscale:z)}.dup(12).sum, 1, 0.25);
+}.play
+)
+//to run the example on iphone sc, replace all 'RedAccelerometer' with 'Accelerometer'
+::

@@ -1,0 +1,81 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<meta http-equiv="Content-Style-Type" content="text/css">
+<title></title>
+<meta name="Generator" content="Cocoa HTML Writer">
+<meta name="CocoaVersion" content="1038.36">
+<style type="text/css">
+p.p1 {margin: 0.0px 0.0px 0.0px 0.0px; font: 12.0px Helvetica}
+p.p2 {margin: 0.0px 0.0px 0.0px 0.0px; font: 12.0px Helvetica; min-height: 14.0px}
+p.p3 {margin: 0.0px 0.0px 0.0px 0.0px; font: 12.0px Helvetica; color: #0000ee}
+p.p4 {margin: 0.0px 0.0px 0.0px 0.0px; font: 9.0px Monaco; min-height: 12.0px}
+p.p5 {margin: 0.0px 0.0px 0.0px 0.0px; font: 9.0px Monaco; color: #902f20}
+p.p6 {margin: 0.0px 0.0px 0.0px 0.0px; font: 9.0px Monaco}
+p.p7 {margin: 0.0px 0.0px 0.0px 0.0px; font: 9.0px Monaco; color: #d5100d}
+p.p8 {margin: 0.0px 0.0px 0.0px 0.0px; font: 9.0px Monaco; color: #000000}
+span.s1 {font: 18.0px Helvetica}
+span.s2 {color: #000000}
+span.s3 {text-decoration: underline}
+span.s4 {color: #062cb0}
+span.s5 {color: #1b39f5}
+span.s6 {color: #132bc3}
+span.s7 {color: #737373}
+span.s8 {color: #008326}
+span.s9 {color: #d5100d}
+span.Apple-tab-span {white-space:pre}
+</style>
+</head>
+<body>
+<p class="p1"><span class="s1"><b>RedInfoLmu</b></span><b><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span>read data from ambient light sensors</b></p>
+<p class="p2"><br></p>
+<p class="p2"><br></p>
+<p class="p1">Only works on newer portable Mac models running OS X (10.4 or newer).</p>
+<p class="p2"><br></p>
+<p class="p3"><span class="s2">see also: <a href="RedInfoBat.html"><span class="s3">RedInfoBat</span></a> <a href="RedInfoSms.html"><span class="s3">RedInfoSms</span></a></span></p>
+<p class="p2"><br></p>
+<p class="p1"><b><span class="Apple-tab-span">	</span>*kr(trig)</b></p>
+<p class="p1"><b><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span></b>returns 2 channels.<span class="Apple-converted-space">  </span>left and right sensor data.</p>
+<p class="p1"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span>zeros if no sensors installed.</p>
+<p class="p1"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><b>trig</b> asks for a new reading.</p>
+<p class="p1"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span>note: there is only one reading function internally.<span class="Apple-converted-space">  </span>a trigger will cause global reading for all ugens.</p>
+<p class="p1"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span>it makes little sense to have this ugen running in multiple synths.<span class="Apple-converted-space">  </span>use busses.</p>
+<p class="p4"><br></p>
+<p class="p4"><br></p>
+<p class="p5">//--</p>
+<p class="p6">s.boot;</p>
+<p class="p5"><span class="s2">{</span><span class="s4">RedInfoLmu</span><span class="s2">.kr(</span><span class="s4">Impulse</span><span class="s2">.kr(10)).poll}.play;<span class="Apple-tab-span">	</span></span>//update 10 times per second</p>
+<p class="p4"><br></p>
+<p class="p6">{<span class="s4">SinOsc</span>.ar(<span class="s4">RedInfoLmu</span>.kr(<span class="s4">Impulse</span>.kr(10))+100, 0, 0.5)}.play;</p>
+<p class="p4"><br></p>
+<p class="p4"><br></p>
+<p class="p7">//--gui test (with automatic calibration)</p>
+<p class="p8">(</p>
+<p class="p8">s.waitForBoot{</p>
+<p class="p8">        <span class="s5">var</span> syn, osc;</p>
+<p class="p8">        <span class="s5">var</span> w= <span class="s6">Window</span>(<span class="s7">"RedInfoLmu test"</span>, <span class="s6">Rect</span>(100, 200, 300, 120));</p>
+<p class="p8">        <span class="s5">var</span> c= [0, 2000, <span class="s8">'lin'</span>, 0, 0].asSpec;</p>
+<p class="p8">        <span class="s5">var</span> l= <span class="s6">EZSlider</span>(w, <span class="s6">Rect</span>(0, 10, 280, 20), <span class="s7">"left"</span>, c);</p>
+<p class="p8">        <span class="s5">var</span> r= <span class="s6">EZSlider</span>(w, <span class="s6">Rect</span>(0, 40, 280, 20), <span class="s7">"right"</span>, c);</p>
+<p class="p8">        w.view.background= <span class="s6">Color</span>.red(0.75);</p>
+<p class="p8">        w.front;</p>
+<p class="p8">       <span class="Apple-converted-space"> </span></p>
+<p class="p8">        syn= <span class="s6">SynthDef</span>(<span class="s8">\ambientlightsensor</span>, {<span class="s5">|rate= 5|</span>           <span class="s9">//update rate</span></p>
+<p class="p8">                <span class="s5">var</span> trig= <span class="s6">Impulse</span>.kr(rate);</p>
+<p class="p8">                <span class="s6">SendReply</span>.kr(trig, <span class="s8">'lr'</span>, <span class="s6">RedInfoLmu</span>.kr(trig));</p>
+<p class="p8">        }).play(s);</p>
+<p class="p8">        osc= <span class="s6">OSCresponder</span>(s.addr, <span class="s8">'lr'</span>, {<span class="s5">|t, resp, m|</span></p>
+<p class="p8">                {</p>
+<p class="p8">                        if(m[3]&gt;c.maxval, {c.maxval= m[3]});</p>
+<p class="p8">                        if(m[4]&gt;c.maxval, {c.maxval= m[4]});</p>
+<p class="p8">                        l.value= m[3];</p>
+<p class="p8">                        r.value= m[4];</p>
+<p class="p8">                }.defer;</p>
+<p class="p8">        }).add;</p>
+<p class="p8">        <span class="s6">CmdPeriod</span>.doOnce({if(w.isClosed.not, {w.close})});</p>
+<p class="p8">        w.onClose= {osc.remove; syn.free};</p>
+<p class="p8">}</p>
+<p class="p8">)</p>
+</body>
+</html>

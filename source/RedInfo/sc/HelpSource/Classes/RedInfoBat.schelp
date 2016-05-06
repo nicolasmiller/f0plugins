@@ -1,0 +1,56 @@
+class:: RedInfoBat
+summary:: read current battery capacity
+categories:: UGens>User Interaction
+related:: Classes/RedInfoLmu, Classes/RedInfoSms
+
+DESCRIPTION::
+Only works on newer portable Mac models running OS X (10.4 or newer).
+
+CLASSMETHODS::
+
+METHOD:: kr
+returns battery capacity in percent.
+-1 if battery no installed.
+
+argument::trig
+trig asks for a new reading. the maximum reading rate internally is 2Hz.
+
+NOTE::
+there is only one reading function internally. a trigger will cause global reading for all ugens.
+it makes little sense to have this ugen running in multiple synths. use busses.
+::
+
+EXAMPLES::
+
+code::
+s.boot;
+{RedInfoBat.kr(Impulse.kr(0.1)).poll}.play;	//update every 10 second
+
+
+//idea: use as master tuning
+//1.0 could correspond to 440Hz and as the battery power drops, the 440 reference follows
+
+//--gui test
+(
+s.waitForBoot{
+	var syn, osc;
+	var w= Window("RedInfoBat test", Rect(100, 200, 300, 120));
+	var c= [0, 1, 'lin', 0, 0].asSpec;
+	var b= EZSlider(w, Rect(0, 10, 280, 20), "battery", c);
+	w.view.background= Color.red(0.75);
+	w.front;
+	
+	syn= SynthDef(\batterycapacity, {|rate= 0.1|		//update rate
+		var trig= Impulse.kr(rate);
+		SendReply.kr(trig, 'b', RedInfoBat.kr(trig));
+	}).play(s);
+	osc= OSCresponder(s.addr, 'b', {|t, resp, m|
+		{
+			b.value= m[3];
+		}.defer;
+	}).add;
+	CmdPeriod.doOnce({if(w.isClosed.not, {w.close})});
+	w.onClose= {osc.remove; syn.free};
+}
+)
+::

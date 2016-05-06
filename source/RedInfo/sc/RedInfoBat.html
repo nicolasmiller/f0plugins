@@ -1,0 +1,79 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<meta http-equiv="Content-Style-Type" content="text/css">
+<title></title>
+<meta name="Generator" content="Cocoa HTML Writer">
+<meta name="CocoaVersion" content="1038.36">
+<style type="text/css">
+p.p1 {margin: 0.0px 0.0px 0.0px 0.0px; font: 12.0px Helvetica}
+p.p2 {margin: 0.0px 0.0px 0.0px 0.0px; font: 12.0px Helvetica; min-height: 14.0px}
+p.p3 {margin: 0.0px 0.0px 0.0px 0.0px; font: 12.0px Helvetica; color: #0000ee}
+p.p4 {margin: 0.0px 0.0px 0.0px 0.0px; font: 9.0px Monaco; min-height: 12.0px}
+p.p5 {margin: 0.0px 0.0px 0.0px 0.0px; font: 9.0px Monaco; color: #902f20}
+p.p6 {margin: 0.0px 0.0px 0.0px 0.0px; font: 9.0px Monaco}
+p.p7 {margin: 0.0px 0.0px 0.0px 0.0px; font: 9.0px Monaco; color: #d5100d}
+p.p8 {margin: 0.0px 0.0px 0.0px 0.0px; font: 9.0px Monaco; color: #000000}
+span.s1 {font: 18.0px Helvetica}
+span.s2 {color: #000000}
+span.s3 {text-decoration: underline}
+span.s4 {color: #062cb0}
+span.s5 {color: #902f20}
+span.s6 {color: #1b39f5}
+span.s7 {color: #132bc3}
+span.s8 {color: #737373}
+span.s9 {color: #008326}
+span.s10 {color: #d5100d}
+span.Apple-tab-span {white-space:pre}
+</style>
+</head>
+<body>
+<p class="p1"><span class="s1"><b>RedInfoBat</b></span><b><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span>read current battery capacity</b></p>
+<p class="p2"><br></p>
+<p class="p2"><br></p>
+<p class="p1">Only works on newer portable Mac models running OS X (10.4 or newer).</p>
+<p class="p2"><br></p>
+<p class="p3"><span class="s2">see also: <a href="RedInfoLmu.html"><span class="s3">RedInfoLmu</span></a> <a href="RedInfoSms.html"><span class="s3">RedInfoSms</span></a></span></p>
+<p class="p2"><br></p>
+<p class="p1"><b><span class="Apple-tab-span">	</span>*kr(trig)</b></p>
+<p class="p1"><b><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span></b>returns battery capacity in percent.</p>
+<p class="p1"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span>-1 if battery no installed.</p>
+<p class="p1"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><b>trig</b> asks for a new reading.<span class="Apple-converted-space">  </span>the maximum reading rate internally is 2Hz.</p>
+<p class="p1"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span>note: there is only one reading function internally.<span class="Apple-converted-space">  </span>a trigger will cause global reading for all ugens.</p>
+<p class="p1"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span>it makes little sense to have this ugen running in multiple synths.<span class="Apple-converted-space">  </span>use busses.</p>
+<p class="p4"><br></p>
+<p class="p4"><br></p>
+<p class="p5">//--</p>
+<p class="p6">s.boot;</p>
+<p class="p6">{<span class="s4">RedInfoBat</span>.kr(<span class="s4">Impulse</span>.kr(0.1)).poll}.play;<span class="Apple-tab-span">	</span><span class="s5">//update every 10 second</span></p>
+<p class="p4"><br></p>
+<p class="p4"><br></p>
+<p class="p5">//idea: use as master tuning</p>
+<p class="p5">//1.0 could correspond to 440Hz and as the battery power drops, the 440 reference follows</p>
+<p class="p4"><br></p>
+<p class="p7">//--gui test</p>
+<p class="p8">(</p>
+<p class="p8">s.waitForBoot{</p>
+<p class="p8">        <span class="s6">var</span> syn, osc;</p>
+<p class="p8">        <span class="s6">var</span> w= <span class="s7">Window</span>(<span class="s8">"RedInfoBat test"</span>, <span class="s7">Rect</span>(100, 200, 300, 120));</p>
+<p class="p8">        <span class="s6">var</span> c= [0, 1, <span class="s9">'lin'</span>, 0, 0].asSpec;</p>
+<p class="p8">        <span class="s6">var</span> b= <span class="s7">EZSlider</span>(w, <span class="s7">Rect</span>(0, 10, 280, 20), <span class="s8">"battery"</span>, c);</p>
+<p class="p8">        w.view.background= <span class="s7">Color</span>.red(0.75);</p>
+<p class="p8">        w.front;</p>
+<p class="p8">       <span class="Apple-converted-space"> </span></p>
+<p class="p8">        syn= <span class="s7">SynthDef</span>(<span class="s9">\batterycapacity</span>, {<span class="s6">|rate= 0.1|</span>            <span class="s10">//update rate</span></p>
+<p class="p8">                <span class="s6">var</span> trig= <span class="s7">Impulse</span>.kr(rate);</p>
+<p class="p8">                <span class="s7">SendReply</span>.kr(trig, <span class="s9">'b'</span>, <span class="s7">RedInfoBat</span>.kr(trig));</p>
+<p class="p8">        }).play(s);</p>
+<p class="p8">        osc= <span class="s7">OSCresponder</span>(s.addr, <span class="s9">'b'</span>, {<span class="s6">|t, resp, m|</span></p>
+<p class="p8">                {</p>
+<p class="p8">                        b.value= m[3];</p>
+<p class="p8">                }.defer;</p>
+<p class="p8">        }).add;</p>
+<p class="p8">        <span class="s7">CmdPeriod</span>.doOnce({if(w.isClosed.not, {w.close})});</p>
+<p class="p8">        w.onClose= {osc.remove; syn.free};</p>
+<p class="p8">}</p>
+<p class="p8">)</p>
+</body>
+</html>

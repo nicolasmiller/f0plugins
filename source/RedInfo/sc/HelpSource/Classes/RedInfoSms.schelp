@@ -1,0 +1,81 @@
+class:: RedInfoSms
+summary:: read data from sudden motion sensor
+categories:: UGens>User Interaction
+related:: Classes/RedInfoSms2, Classes/RedInfoSms3, Classes/RedInfoBat, Classes/RedInfoLmu
+
+DESCRIPTION::
+Only works on newer portable Mac models running OS X (10.4 or newer).
+Using UniMotion 0.4.1 (http://unimotion.sourceforge.net/) by Lincoln Ramsay
+
+Version notes:
+This version the prefered version. link::Classes/RedInfoSms2:: and link::Classes/RedInfoSms3:: are less refined and use integer data.
+
+WARNING::
+Don't expect the xyz directions to be the same on all Mac portables. Apple changed x axis a few times.
+::
+
+CLASSMETHODS::
+
+METHOD:: kr
+returns 3 channels. x, y and z sensor data (floats).
+zeros if no sensors installed.
+
+argument::trig
+asks for a new reading. the faster you ask, the more cpu it will require.
+
+NOTE::
+there is only one reading function internally. a trigger will cause global reading for all ugens. it makes little sense to have this ugen running in multiple synths. use busses.
+::
+
+EXAMPLES::
+
+code::
+s.boot;
+{RedInfoSms.kr(Impulse.kr(2)).poll; DC.ar(0)}.play;		//read sensor values twice a second
+
+//very sensitive but will require a bit extra of the cpu
+{Mix(SinOsc.ar(RedInfoSms.kr(Impulse.kr(50))*500+500, 0, 0.4))}.play;//read sensor 50/sec
+
+//less cpu with lower trig rate and using ramp to smooth data
+{Mix(SinOsc.ar(Ramp.kr(RedInfoSms.kr(Impulse.kr(10)))*500+500, 0, 0.4))}.play;
+
+
+//separating the 3 axis
+({
+var sensor= RedInfoSms.kr(Impulse.kr(25));
+var x= sensor[0];
+var y= sensor[1];
+var z= sensor[2];
+var snd0= SinOsc.ar(x*500+1000);
+var snd1= SinOsc.ar(y*500+1000);
+var snd2= SinOsc.ar(z*500+1000);
+Pan2.ar(Mix([snd0, snd1, snd2]), 0, 0.3);
+}.play
+)
+
+//--gui test
+(
+var syn, osc;
+var w= Window("RedInfoSms", Rect(100, 200, 300, 120));
+var c= [-2, 2, 'lin', 0, 0].asSpec;
+var x= EZSlider(w, Rect(0, 10, 280, 20), "x", c);
+var y= EZSlider(w, Rect(0, 40, 280, 20), "y", c);
+var z= EZSlider(w, Rect(0, 70, 280, 20), "z", c);
+w.view.background= Color.red(0.75);
+w.front;
+
+syn= SynthDef(\suddenmotionsensor, {|rate= 15|		//update rate
+	var trig= Impulse.kr(rate);
+	SendReply.kr(trig, 'xyz', RedInfoSms.kr(trig));
+}).play(s);
+osc= OSCresponder(s.addr, 'xyz', {|t, resp, m|
+	{
+		x.value= m[3];
+		y.value= m[4];
+		z.value= m[5];
+	}.defer;
+}).add;
+CmdPeriod.doOnce({if(w.isClosed.not, {w.close})});
+w.onClose= {osc.remove; syn.free};
+)
+::

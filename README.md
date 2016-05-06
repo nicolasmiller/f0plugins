@@ -1,2 +1,2 @@
 # f0plugins
-A version of fredrikolofsson's f0Plugins that will hopefully build against SC's bleeding edge
+A version of fredrikolofsson's f0Plugins that will hopefully build against SC's bleeding edge (on Linux only right now).
